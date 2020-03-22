@@ -3,12 +3,13 @@ const express = require('express');
 const accountSid = 'AC4afc9a4ad304cdd41a29d6c113c65696';
 const authToken = 'cb475a819a809ccd777e06a9f87fed39';
 const client = require('twilio')(accountSid, authToken);
+const port = process.env.PORT || 1337
 const MessagingResponse = require('twilio').twiml.MessagingResponse;
 
 const app = express();
 
 app.get('/hearbeat',(req,res) =>{
-  res.send("Alive");
+  res.send("Alive on port:"+port);
 })
 
 app.post('/sms', (req, res) => {
@@ -29,8 +30,8 @@ client.messages
    })
   .then(message => console.log(message.sid)); 
 
-http.createServer(app).listen(1337, () => {
-  console.log('Express server listening on port 1337');
+http.createServer(app).listen(port, () => {
+  console.log('Express server listening on port:'+port);
 });
 
 
