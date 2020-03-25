@@ -6,6 +6,7 @@ const authToken = 'cb475a819a809ccd777e06a9f87fed39';
 const client = require('twilio')(accountSid, authToken);
 var bodyParser = require('body-parser');
 var request = require('request');
+
 router.use(bodyParser.urlencoded({ extended: false }));
 
 const port = process.env.PORT || 1337
@@ -16,7 +17,7 @@ const coronaStatsFromStateCounty = "https://api.coronainusa.com/location/search?
 const app = express();
 
 router.get('/heartbeat', (req, res) => {
-  res.send("Alive on port:" + port);
+  res.send("Alive on port:" + port); 
 })
 
 const coronaStatsForUSPostalCode = (postalCode, callback) => {
@@ -99,6 +100,8 @@ const coronaStats = (callback) => {
 }
 
 router.post('/sms', (req, res) => {
+
+  
   //console.log('starting');
   //console.log(req.body);
   //debugger;
@@ -123,7 +126,7 @@ router.post('/sms', (req, res) => {
               if(postalCodeFailure.length>0){
                 countyLevelInfo = postalCodeFailure;
               }
-              data = countyLevelInfo + ". " + data + ". For other PostalCodes reply back with the PostalCode and for other countries reply back with the country name.";
+              data = countyLevelInfo + ". " + data + ". Reply back with PostalCode Or Country Name.";
               //var data = dataForUser.map(d => d.country + ' Cases:'+d.confirmedCases+'Deaths:'+d.deaths).join(', ')
               twiml.message(data);
               res.writeHead(200, { 'Content-Type': 'text/xml' });
@@ -136,7 +139,7 @@ router.post('/sms', (req, res) => {
           //console.log('result fetched');
           const twiml = new MessagingResponse();
           var data = dataForUser.filter(c => c.country.toLowerCase() == 'us').map(d => 'Country:' + d.country + ' Cases:' + d.confirmedCases + ' Deaths:' + d.deaths)
-          data = data + ". For US to get your county info reply back with the PostalCode, for other countries reply back with the country name.";
+          data = data + ".  Reply back with PostalCode(US) Or Country Name.";
           //var data = dataForUser.map(d => d.country + ' Cases:'+d.confirmedCases+'Deaths:'+d.deaths).join(', ')
           twiml.message(data);
           res.writeHead(200, { 'Content-Type': 'text/xml' });
@@ -157,7 +160,7 @@ router.post('/sms', (req, res) => {
           res.end(twiml.toString());
         }
         else {
-          data = data + ". For US to get your county info reply back with the PostalCode, for other countries reply back with the country name.";
+          data = data + ". Reply back with PostalCode(US) Or Country Name.";
           //var data = dataForUser.map(d => d.country + ' Cases:'+d.confirmedCases+'Deaths:'+d.deaths).join(', ')
           twiml.message(data);
           res.writeHead(200, { 'Content-Type': 'text/xml' });
