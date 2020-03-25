@@ -110,7 +110,7 @@ router.post('/sms', (req, res) => {
               //console.log('result fetched');
               const twiml = new MessagingResponse();
               var data = dataForUser.filter(c => c.country.toLowerCase() == 'us').map(d => 'Country:' + d.country + ' Cases:' + d.confirmedCases + ' Deaths:' + d.deaths)
-              data = countyLevelInfo + ". " + data + ". For other countries reply back with country name.";
+              data = countyLevelInfo + ". " + data + ". For other countries reply back with the country name.";
               //var data = dataForUser.map(d => d.country + ' Cases:'+d.confirmedCases+'Deaths:'+d.deaths).join(', ')
               twiml.message(data);
               res.writeHead(200, { 'Content-Type': 'text/xml' });
@@ -123,7 +123,7 @@ router.post('/sms', (req, res) => {
           //console.log('result fetched');
           const twiml = new MessagingResponse();
           var data = dataForUser.filter(c => c.country.toLowerCase() == 'us').map(d => 'Country:' + d.country + ' Cases:' + d.confirmedCases + ' Deaths:' + d.deaths)
-          data = data + ". For US to get your county info reply with PostalCode, for other countries reply back with country name.";
+          data = data + ". For US to get your county info reply back with the PostalCode, for other countries reply back with the country name.";
           //var data = dataForUser.map(d => d.country + ' Cases:'+d.confirmedCases+'Deaths:'+d.deaths).join(', ')
           twiml.message(data);
           res.writeHead(200, { 'Content-Type': 'text/xml' });
@@ -139,12 +139,12 @@ router.post('/sms', (req, res) => {
         var data = dataForUser.filter(c => c.country.toLowerCase() == userProvidedCountry).map(d => 'Country:' + d.country + ' Cases:' + d.confirmedCases + ' Deaths:' + d.deaths)
         if (data.length <= 0) {
           //var data = dataForUser.map(d => d.country + ' Cases:'+d.confirmedCases+'Deaths:'+d.deaths).join(', ')
-          twiml.message('No data found for the country:' + data);
+          twiml.message('No data found for the country:' + userProvidedCountry);
           res.writeHead(200, { 'Content-Type': 'text/xml' });
           res.end(twiml.toString());
         }
         else {
-          data = data + ". For US to get your county info reply with PostalCode, for other countries reply back with country name.";
+          data = data + ". For US to get your county info reply back with the PostalCode, for other countries reply back with the country name.";
           //var data = dataForUser.map(d => d.country + ' Cases:'+d.confirmedCases+'Deaths:'+d.deaths).join(', ')
           twiml.message(data);
           res.writeHead(200, { 'Content-Type': 'text/xml' });
