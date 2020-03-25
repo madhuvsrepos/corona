@@ -34,6 +34,9 @@ const coronaStatsForUSPostalCode = (postalCode, callback) => {
         callback("error");
       }
       var county = JSON.parse(body).address.county.replace("County", "").replace("county", "").trim();
+      if(county === "Queens County"){
+        county= "New York";
+      }
       var state = JSON.parse(body).address.state;
       var coronaStatsEndpoint = coronaStatsFromStateCounty + "state=" + state + "&county=" + county;
       var options1 = {
