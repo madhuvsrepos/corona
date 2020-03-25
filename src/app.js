@@ -20,6 +20,7 @@ router.get('/heartbeat', (req, res) => {
 })
 
 const coronaStatsForUSPostalCode = (postalCode, callback) => {
+  //debugger;
   var options = {
     url: coordinateFromPostalCodeEndpoint + postalCode,
     method: 'GET', // Don't forget this line
@@ -34,8 +35,8 @@ const coronaStatsForUSPostalCode = (postalCode, callback) => {
         callback("error");
       }
       var county = JSON.parse(body).address.county.replace("County", "").replace("county", "").trim();
-      if(county === "Queens County"){
-        county= "New York";
+      if (county === "Queens") {
+        county = "New York";
       }
       var state = JSON.parse(body).address.state;
       var coronaStatsEndpoint = coronaStatsFromStateCounty + "state=" + state + "&county=" + county;
@@ -45,11 +46,16 @@ const coronaStatsForUSPostalCode = (postalCode, callback) => {
       };
       request(options1, (err, response, body) => {
         if (err) {
-          //console.log(err);
+          callback("error");
         } else {
-          var parsedBody = JSON.parse(body);
-          var info = "State:" + parsedBody.state + " County:" + parsedBody.county + " Active:" + parsedBody.active.count + " Recoverd:" + parsedBody.recovered.count + " Dead:" + parsedBody.dead.count
-          callback(info);
+          try {
+            var parsedBody = JSON.parse(body);
+            var info = "State:" + parsedBody.state + " County:" + parsedBody.county + " Active:" + parsedBody.active.count + " Recoverd:" + parsedBody.recovered.count + " Dead:" + parsedBody.dead.count
+            callback(info);
+          }
+          catch{
+            callback("error");
+          }
         }
       })
     }
@@ -103,10 +109,11 @@ router.post('/sms', (req, res) => {
         }
         coronaStatsForUSPostalCode(isPostalCode.trim(), (countyLevelInfo) => {
           if (countyLevelInfo === "error") {
-            twiml.message("Could not process the postalcode more than 5 digits:" + isPostalCode);
+            const twiml = new MessagingResponse();
+            twiml.message("Could not process the postalcode:" + isPostalCode);
             res.writeHead(200, { 'Content-Type': 'text/xml' });
             res.end(twiml.toString());
-            return;
+            
           }
           if (countyLevelInfo !== "error") {
             coronaStats((dataForUser) => {
