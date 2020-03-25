@@ -1,5 +1,7 @@
 # corona
 
+Notes not formatted/organized yet.
+
 https://www.codeproject.com/KB/cs/sms/sms.zip
 http://www.scampers.org/steve/sms/libraries.htm
 10.0.0.53:8090
@@ -7,17 +9,18 @@ http://www.scampers.org/steve/sms/libraries.htm
 
 http://10.0.0.53:8090/sendsms?username=sadiq&password=1234&phone=8048339565&message=test
 https://192.168.102:8080/receivesms
+http://localhost:1337/sms (Local send message)
 
 Twilio
 ACCOUNT SID
-	AC4afc9a4ad304cdd41a29d6c113c65696
+	<YOUR_TWILIO_ACCOUNT_SID>
 AuthToken
-	cb475a819a809ccd777e06a9f87fed39
-Twilio Phone Number: 2084875541
+	<YOUR_TWILIO_AUTH_TOKEN>
+Twilio Phone Number: <YOUR_TWILIO_PHONE_NUMBER>
 Referral Code: www.twilio.com/referral/l4zoCa
 Environment Variables:
-	TWILIO_ACCOUNT_SID=AC4afc9a4ad304cdd41a29d6c113c65696
-	TWILIO_AUTH_TOKEN=f80df66f977d97e84d9eedc3cbf6223a
+	TWILIO_ACCOUNT_SID=<YOUR_TWILIO_ACCOUNT_SID>
+	TWILIO_AUTH_TOKEN=<YOUR_TWILIO_AUTH_TOKEN>
 Using Twilio cli to update localhost and test in local
 	twilio phone-numbers:update "+12084875541" --sms-url="http://localhost:1337/sms"
 	https://corona-alerts.herokuapp.com/sms --> To update in Twilio Server Dashboard for the phone number
