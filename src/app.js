@@ -110,7 +110,7 @@ router.post('/sms', (req, res) => {
               //console.log('result fetched');
               const twiml = new MessagingResponse();
               var data = dataForUser.filter(c => c.country.toLowerCase() == 'us').map(d => 'Country:' + d.country + ' Cases:' + d.confirmedCases + ' Deaths:' + d.deaths)
-              data = countyLevelInfo + ". " + data + ". For other countries reply back with the country name.";
+              data = countyLevelInfo + ". " + data + ". For other PostalCodes reply back with the PostalCode and for other countries reply back with the country name.";
               //var data = dataForUser.map(d => d.country + ' Cases:'+d.confirmedCases+'Deaths:'+d.deaths).join(', ')
               twiml.message(data);
               res.writeHead(200, { 'Content-Type': 'text/xml' });
