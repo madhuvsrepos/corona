@@ -30,7 +30,10 @@ const coronaStatsForUSPostalCode = (postalCode, callback) => {
     if (err) {
       //console.log(err);
     } else {
-      var county = JSON.parse(body).address.county.replace("County","").replace("county","").trim();
+      if (JSON.parse(body).address.county.length < 1) {
+        callback("error");
+      }
+      var county = JSON.parse(body).address.county.replace("County", "").replace("county", "").trim();
       var state = JSON.parse(body).address.state;
       var coronaStatsEndpoint = coronaStatsFromStateCounty + "state=" + state + "&county=" + county;
       var options1 = {
@@ -84,59 +87,73 @@ router.post('/sms', (req, res) => {
   //console.log('starting');
   //console.log(req.body);
   //debugger;
-  try{
-  var isPostalCode = req.body.Body.toLowerCase().trim();
-  var isNumberInput = !isNaN(isPostalCode.trim()) && isPostalCode.trim().length <= 11;
-  if (isNumberInput || req.body.Body.toLowerCase() == 'corona' || req.body.Body.toLowerCase() == 'usa' || req.body.Body.toLowerCase() == 'us' || req.body.Body.toLowerCase() == 'America' || req.body.Body.toLowerCase() == 'unitedstates' || req.body.Body.toLowerCase() == 'united states') {
-    if (isNumberInput) {
-      coronaStatsForUSPostalCode(isPostalCode.trim(), (countyLevelInfo) => {
+  try {
+    var isPostalCode = req.body.Body.toLowerCase().trim();
+    var isNumberInput = !isNaN(isPostalCode.trim()) && isPostalCode.trim().length <= 11;
+    if (isNumberInput || req.body.Body.toLowerCase() == 'corona' || req.body.Body.toLowerCase() == 'usa' || req.body.Body.toLowerCase() == 'us' || req.body.Body.toLowerCase() == 'America' || req.body.Body.toLowerCase() == 'unitedstates' || req.body.Body.toLowerCase() == 'united states') {
+      if (isNumberInput) {
+        if (isPostalCode.trim().length > 5) {
+          twiml.message("Could not process the postalcode more than 5 digits:" + isPostalCode);
+          res.writeHead(200, { 'Content-Type': 'text/xml' });
+          res.end(twiml.toString());
+          return;
+        }
+        coronaStatsForUSPostalCode(isPostalCode.trim(), (countyLevelInfo) => {
+          if (countyLevelInfo === "error") {
+            twiml.message("Could not process the postalcode more than 5 digits:" + isPostalCode);
+            res.writeHead(200, { 'Content-Type': 'text/xml' });
+            res.end(twiml.toString());
+            return;
+          }
+          if (countyLevelInfo !== "error") {
+            coronaStats((dataForUser) => {
+              //console.log('result fetched');
+              const twiml = new MessagingResponse();
+              var data = dataForUser.filter(c => c.country.toLowerCase() == 'us').map(d => 'Country:' + d.country + ' Cases:' + d.confirmedCases + ' Deaths:' + d.deaths)
+              data = countyLevelInfo + ". " + data + ". For other countries reply back with country name.";
+              //var data = dataForUser.map(d => d.country + ' Cases:'+d.confirmedCases+'Deaths:'+d.deaths).join(', ')
+              twiml.message(data);
+              res.writeHead(200, { 'Content-Type': 'text/xml' });
+              res.end(twiml.toString());
+            });
+          }
+        });
+      } else {
         coronaStats((dataForUser) => {
           //console.log('result fetched');
           const twiml = new MessagingResponse();
           var data = dataForUser.filter(c => c.country.toLowerCase() == 'us').map(d => 'Country:' + d.country + ' Cases:' + d.confirmedCases + ' Deaths:' + d.deaths)
-          data = countyLevelInfo +". "+ data + ". For other countries reply back with country name.";
+          data = data + ". For US to get your county info reply with PostalCode, for other countries reply back with country name.";
           //var data = dataForUser.map(d => d.country + ' Cases:'+d.confirmedCases+'Deaths:'+d.deaths).join(', ')
           twiml.message(data);
           res.writeHead(200, { 'Content-Type': 'text/xml' });
           res.end(twiml.toString());
         });
-      });
-    } else {
+      }
+    }
+    else {
       coronaStats((dataForUser) => {
         //console.log('result fetched');
         const twiml = new MessagingResponse();
-        var data = dataForUser.filter(c => c.country.toLowerCase() == 'us').map(d => 'Country:' + d.country + ' Cases:' + d.confirmedCases + ' Deaths:' + d.deaths)
-        data = data + ". For US to get your county info reply with PostalCode, for other countries reply back with country name.";
-        //var data = dataForUser.map(d => d.country + ' Cases:'+d.confirmedCases+'Deaths:'+d.deaths).join(', ')
-        twiml.message(data);
-        res.writeHead(200, { 'Content-Type': 'text/xml' });
-        res.end(twiml.toString());
+        var userProvidedCountry = req.body.Body.toLowerCase();
+        var data = dataForUser.filter(c => c.country.toLowerCase() == userProvidedCountry).map(d => 'Country:' + d.country + ' Cases:' + d.confirmedCases + ' Deaths:' + d.deaths)
+        if (data.length <= 0) {
+          //var data = dataForUser.map(d => d.country + ' Cases:'+d.confirmedCases+'Deaths:'+d.deaths).join(', ')
+          twiml.message('No data found for the country:' + data);
+          res.writeHead(200, { 'Content-Type': 'text/xml' });
+          res.end(twiml.toString());
+        }
+        else {
+          data = data + ". For US to get your county info reply with PostalCode, for other countries reply back with country name.";
+          //var data = dataForUser.map(d => d.country + ' Cases:'+d.confirmedCases+'Deaths:'+d.deaths).join(', ')
+          twiml.message(data);
+          res.writeHead(200, { 'Content-Type': 'text/xml' });
+          res.end(twiml.toString());
+        }
       });
+
+
     }
-  }
-  else {
-    coronaStats((dataForUser) => {
-      //console.log('result fetched');
-      const twiml = new MessagingResponse();
-      var userProvidedCountry = req.body.Body.toLowerCase();
-      var data = dataForUser.filter(c => c.country.toLowerCase() == userProvidedCountry).map(d => 'Country:' + d.country + ' Cases:' + d.confirmedCases + ' Deaths:' + d.deaths)
-      if (data.length <= 0) {
-        //var data = dataForUser.map(d => d.country + ' Cases:'+d.confirmedCases+'Deaths:'+d.deaths).join(', ')
-        twiml.message('No data found for the country:' + data);
-        res.writeHead(200, { 'Content-Type': 'text/xml' });
-        res.end(twiml.toString());
-      }
-      else {
-        data = data + ". For US to get your county info reply with PostalCode, for other countries reply back with country name.";
-        //var data = dataForUser.map(d => d.country + ' Cases:'+d.confirmedCases+'Deaths:'+d.deaths).join(', ')
-        twiml.message(data);
-        res.writeHead(200, { 'Content-Type': 'text/xml' });
-        res.end(twiml.toString());
-      }
-    });
-
-
-  }
   }
   catch{
     const twiml = new MessagingResponse();
