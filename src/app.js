@@ -84,6 +84,7 @@ router.post('/sms', (req, res) => {
   //console.log('starting');
   //console.log(req.body);
   //debugger;
+  try{
   var isPostalCode = req.body.Body.toLowerCase().trim();
   var isNumberInput = !isNaN(isPostalCode.trim()) && isPostalCode.trim().length <= 11;
   if (isNumberInput || req.body.Body.toLowerCase() == 'corona' || req.body.Body.toLowerCase() == 'usa' || req.body.Body.toLowerCase() == 'us' || req.body.Body.toLowerCase() == 'America' || req.body.Body.toLowerCase() == 'unitedstates' || req.body.Body.toLowerCase() == 'united states') {
@@ -136,7 +137,13 @@ router.post('/sms', (req, res) => {
 
 
   }
-
+  }
+  catch{
+    const twiml = new MessagingResponse();
+    twiml.message("Unable to Process your request.")
+    res.writeHead(200, { 'Content-Type': 'text/xml' });
+    res.end(twiml.toString());
+  }
 });
 
 
