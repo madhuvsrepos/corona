@@ -21,6 +21,7 @@ router.get('/heartbeat', (req, res) => {
 
 const coronaStatsForUSPostalCode = (postalCode, callback) => {
   //debugger;
+  if (postalCode.trim().length > 5){callback("");return;}
   var options = {
     url: coordinateFromPostalCodeEndpoint + postalCode,
     method: 'GET', // Don't forget this line
@@ -49,9 +50,14 @@ const coronaStatsForUSPostalCode = (postalCode, callback) => {
           callback("error");
         } else {
           try {
-            var parsedBody = JSON.parse(body);
+            if(body.includes("html")){
+              callback("No Data Found.");
+            }
+            else{
+              var parsedBody = JSON.parse(body);
             var info = "State:" + parsedBody.state + " County:" + parsedBody.county + " Active:" + parsedBody.active.count + " Recoverd:" + parsedBody.recovered.count + " Dead:" + parsedBody.dead.count
             callback(info);
+            }
           }
           catch{
             callback("error");
@@ -101,25 +107,22 @@ router.post('/sms', (req, res) => {
     var isNumberInput = !isNaN(isPostalCode.trim()) && isPostalCode.trim().length <= 11;
     if (isNumberInput || req.body.Body.toLowerCase() == 'corona' || req.body.Body.toLowerCase() == 'usa' || req.body.Body.toLowerCase() == 'us' || req.body.Body.toLowerCase() == 'America' || req.body.Body.toLowerCase() == 'unitedstates' || req.body.Body.toLowerCase() == 'united states') {
       if (isNumberInput) {
+        var postalCodeFailure = "";
         if (isPostalCode.trim().length > 5) {
-          twiml.message("Could not process the postalcode more than 5 digits:" + isPostalCode);
-          res.writeHead(200, { 'Content-Type': 'text/xml' });
-          res.end(twiml.toString());
-          return;
+          postalCodeFailure = "Could not process the postalcode more than 5 digits:" + isPostalCode;
         }
         coronaStatsForUSPostalCode(isPostalCode.trim(), (countyLevelInfo) => {
           if (countyLevelInfo === "error") {
-            const twiml = new MessagingResponse();
-            twiml.message("Could not process the postalcode:" + isPostalCode);
-            res.writeHead(200, { 'Content-Type': 'text/xml' });
-            res.end(twiml.toString());
-            
+            postalCodeFailure = "Could not process the postalcode:" + isPostalCode;
           }
           if (countyLevelInfo !== "error") {
             coronaStats((dataForUser) => {
               //console.log('result fetched');
               const twiml = new MessagingResponse();
               var data = dataForUser.filter(c => c.country.toLowerCase() == 'us').map(d => 'Country:' + d.country + ' Cases:' + d.confirmedCases + ' Deaths:' + d.deaths)
+              if(postalCodeFailure.length>0){
+                countyLevelInfo = postalCodeFailure;
+              }
               data = countyLevelInfo + ". " + data + ". For other PostalCodes reply back with the PostalCode and for other countries reply back with the country name.";
               //var data = dataForUser.map(d => d.country + ' Cases:'+d.confirmedCases+'Deaths:'+d.deaths).join(', ')
               twiml.message(data);
@@ -146,7 +149,7 @@ router.post('/sms', (req, res) => {
         //console.log('result fetched');
         const twiml = new MessagingResponse();
         var userProvidedCountry = req.body.Body.toLowerCase();
-        var data = dataForUser.filter(c => c.country.toLowerCase() == userProvidedCountry).map(d => 'Country:' + d.country + ' Cases:' + d.confirmedCases + ' Deaths:' + d.deaths)
+        var data = dataForUser.filter(c => c.country.toLowerCase() == userProvidedCountry.trim()).map(d => 'Country:' + d.country + ' Cases:' + d.confirmedCases + ' Deaths:' + d.deaths)
         if (data.length <= 0) {
           //var data = dataForUser.map(d => d.country + ' Cases:'+d.confirmedCases+'Deaths:'+d.deaths).join(', ')
           twiml.message('No data found for the country:' + userProvidedCountry);
@@ -165,7 +168,7 @@ router.post('/sms', (req, res) => {
 
     }
   }
-  catch{
+  catch(err){
     const twiml = new MessagingResponse();
     twiml.message("Unable to Process your request.")
     res.writeHead(200, { 'Content-Type': 'text/xml' });
