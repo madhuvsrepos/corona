@@ -108,7 +108,7 @@ router.post('/sms', (req, res) => {
   try {
     var isPostalCode = req.body.Body.toLowerCase().trim();
     var isNumberInput = !isNaN(isPostalCode.trim()) && isPostalCode.trim().length <= 11;
-    if (isNumberInput || req.body.Body.toLowerCase().trim() == 'corona' || req.body.Body.toLowerCase().trim() == 'usa' || req.body.Body.toLowerCase().trim() == 'u.s.a.' || req.body.Body.toLowerCase().trim() == 'us' || req.body.Body.toLowerCase().trim() == 'america' || req.body.Body.toLowerCase().trim() == 'unitedstates' || req.body.Body.toLowerCase().trim() == 'united states') {
+    if (isNumberInput || req.body.Body.toLowerCase().trim() == 'corona' || req.body.Body.toLowerCase().trim() == 'usa' || req.body.Body.toLowerCase().trim() == 'u.s.a.' || req.body.Body.toLowerCase().trim() == 'u.s.a' || req.body.Body.toLowerCase().trim() == 'us' || req.body.Body.toLowerCase().trim() == 'america' || req.body.Body.toLowerCase().trim() == 'unitedstates' || req.body.Body.toLowerCase().trim() == 'united states') {
       if (isNumberInput) {
         var postalCodeFailure = "";
         if (isPostalCode.trim().length > 5) {
