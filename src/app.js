@@ -108,7 +108,7 @@ router.post('/sms', (req, res) => {
   try {
     var isPostalCode = req.body.Body.toLowerCase().trim();
     var isNumberInput = !isNaN(isPostalCode.trim()) && isPostalCode.trim().length <= 11;
-    if (isNumberInput || req.body.Body.toLowerCase() == 'corona' || req.body.Body.toLowerCase() == 'usa' || req.body.Body.toLowerCase() == 'us' || req.body.Body.toLowerCase() == 'America' || req.body.Body.toLowerCase() == 'unitedstates' || req.body.Body.toLowerCase() == 'united states') {
+    if (isNumberInput || req.body.Body.toLowerCase().trim() == 'corona' || req.body.Body.toLowerCase().trim() == 'usa' || req.body.Body.toLowerCase().trim() == 'u.s.a.' || req.body.Body.toLowerCase().trim() == 'us' || req.body.Body.toLowerCase().trim() == 'america' || req.body.Body.toLowerCase().trim() == 'unitedstates' || req.body.Body.toLowerCase().trim() == 'united states') {
       if (isNumberInput) {
         var postalCodeFailure = "";
         if (isPostalCode.trim().length > 5) {
@@ -122,7 +122,7 @@ router.post('/sms', (req, res) => {
             coronaStats((dataForUser) => {
               //console.log('result fetched');
               const twiml = new MessagingResponse();
-              var data = dataForUser.filter(c => c.country.toLowerCase() == 'us').map(d => 'Country:' + d.country + ' Cases:' + d.confirmedCases + ' Deaths:' + d.deaths)
+              var data = dataForUser.filter(c => c.country.toLowerCase().trim() == 'us').map(d => 'Country:' + d.country + ' Cases:' + d.confirmedCases + ' Deaths:' + d.deaths)
               if(postalCodeFailure.length>0){
                 countyLevelInfo = postalCodeFailure;
               }
@@ -138,7 +138,7 @@ router.post('/sms', (req, res) => {
         coronaStats((dataForUser) => {
           //console.log('result fetched');
           const twiml = new MessagingResponse();
-          var data = dataForUser.filter(c => c.country.toLowerCase() == 'us').map(d => 'Country:' + d.country + ' Cases:' + d.confirmedCases + ' Deaths:' + d.deaths)
+          var data = dataForUser.filter(c => c.country.toLowerCase().trim() == 'us').map(d => 'Country:' + d.country + ' Cases:' + d.confirmedCases + ' Deaths:' + d.deaths)
           data = data + ".  Reply back with PostalCode(US) Or Country Name.";
           //var data = dataForUser.map(d => d.country + ' Cases:'+d.confirmedCases+'Deaths:'+d.deaths).join(', ')
           twiml.message(data);
@@ -151,7 +151,7 @@ router.post('/sms', (req, res) => {
       coronaStats((dataForUser) => {
         //console.log('result fetched');
         const twiml = new MessagingResponse();
-        var userProvidedCountry = req.body.Body.toLowerCase();
+        var userProvidedCountry = req.body.Body.toLowerCase().trim();
         var data = dataForUser.filter(c => c.country.toLowerCase() == userProvidedCountry.trim()).map(d => 'Country:' + d.country + ' Cases:' + d.confirmedCases + ' Deaths:' + d.deaths)
         if (data.length <= 0) {
           //var data = dataForUser.map(d => d.country + ' Cases:'+d.confirmedCases+'Deaths:'+d.deaths).join(', ')
