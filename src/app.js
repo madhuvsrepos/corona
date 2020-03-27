@@ -56,7 +56,7 @@ const coronaStatsForUSPostalCode = (postalCode, callback) => {
             }
             else{
               var parsedBody = JSON.parse(body);
-            var info = "State:" + parsedBody.state + " County:" + parsedBody.county + " Active:" + parsedBody.active.count + " Recoverd:" + parsedBody.recovered.count + " Dead:" + parsedBody.dead.count
+            var info = "State:" + parsedBody.state + " County:" + parsedBody.county + " Active:" + parsedBody.active.count + " Recovered:" + parsedBody.recovered.count + " Dead:" + parsedBody.dead.count
             callback(info);
             }
           }
