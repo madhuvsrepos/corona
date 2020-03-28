@@ -51,7 +51,7 @@ const coronaStatsForUSPostalCode = (postalCode, callback) => {
           callback("error");
         } else {
           try {
-            if(body.includes("html")){
+            if(body.includes("html") || body.length < 1) {
               callback("No Data Found.");
             }
             else{
