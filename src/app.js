@@ -114,7 +114,7 @@ router.post('/sms', (req, res) => {
         if (isPostalCode.trim().length > 5) {
           postalCodeFailure = "Could not process the postalcode more than 5 digits:" + isPostalCode;
         }
-        coronaStatsForUSPostalCode(isPostalCode.trim(), (countyLevelInfo) => {
+        coronaStatsForUSPostalCode(isPostalCode.trim(), (countyLevelInfo) => { 
           if (countyLevelInfo === "error") {
             postalCodeFailure = "Could not process the postalcode:" + isPostalCode;
           }
