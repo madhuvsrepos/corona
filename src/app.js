@@ -12,6 +12,7 @@ router.use(bodyParser.urlencoded({ extended: false }));
 const port = process.env.PORT || 1337
 const MessagingResponse = require('twilio').twiml.MessagingResponse;
 const coronaStatsEndpoint = "https://covid-19-coronavirus-statistics.p.rapidapi.com/v1/stats";
+const coronaStatsEndpointNew = "https://corona.lmao.ninja/countries?sort=country";
 const coordinateFromPostalCodeEndpoint = "https://api.coronainusa.com/esri/geocode?address=";
 const coronaStatsFromStateCounty = "https://api.coronainusa.com/location/search?";//state=TX&county=Williamson
 const app = express();
@@ -99,6 +100,27 @@ const coronaStats = (callback) => {
   });
 }
 
+const coronaStatsNew = (callback) => {
+  var options = {
+    url: coronaStatsEndpointNew,
+    method: 'GET', // Don't forget this line
+  };
+  const dataForUser = [];
+  // Create request to get data
+  request(options, (err, response, body) => {
+    if (err) {
+      countryData="NoData";
+      callback("NoData");
+    } else {
+
+      var globalData = JSON.parse(body);
+                        var countries = [... new Set(globalData.map(x => {return {country: x.country, iso2: x.countryInfo.iso2, confirmedCases: x.cases, deaths: x.deaths, recovered: x.recovered}}))];
+                        callback(countries);
+    }
+  });
+}
+
+
 router.post('/sms', (req, res) => {
 
   
@@ -119,10 +141,10 @@ router.post('/sms', (req, res) => {
             postalCodeFailure = "Could not process the postalcode:" + isPostalCode;
           }
           if (countyLevelInfo !== "error") {
-            coronaStats((dataForUser) => {
+            coronaStatsNew((dataForUser) => {
               //console.log('result fetched');
               const twiml = new MessagingResponse();
-              var data = dataForUser.filter(c => c.country.toLowerCase().trim() == 'us').map(d => 'Country:' + d.country + ' Cases:' + d.confirmedCases + ' Deaths:' + d.deaths)
+              var data = dataForUser.filter(c => c.country.toLowerCase().trim() == 'usa').map(d => 'Country:' + d.country + ' Cases:' + d.confirmedCases + ' Deaths:' + d.deaths)
               if(postalCodeFailure.length>0){
                 countyLevelInfo = postalCodeFailure;
               }
@@ -135,10 +157,10 @@ router.post('/sms', (req, res) => {
           }
         });
       } else {
-        coronaStats((dataForUser) => {
+        coronaStatsNew((dataForUser) => {
           //console.log('result fetched');
           const twiml = new MessagingResponse();
-          var data = dataForUser.filter(c => c.country.toLowerCase().trim() == 'us').map(d => 'Country:' + d.country + ' Cases:' + d.confirmedCases + ' Deaths:' + d.deaths)
+          var data = dataForUser.filter(c => c.country.toLowerCase().trim() == 'usa').map(d => 'Country:' + d.country + ' Cases:' + d.confirmedCases + ' Deaths:' + d.deaths)
           data = data + ".  Reply back with PostalCode(US) Or Country Name.";
           //var data = dataForUser.map(d => d.country + ' Cases:'+d.confirmedCases+'Deaths:'+d.deaths).join(', ')
           twiml.message(data);
@@ -148,7 +170,7 @@ router.post('/sms', (req, res) => {
       }
     }
     else {
-      coronaStats((dataForUser) => {
+      coronaStatsNew((dataForUser) => {
         //console.log('result fetched');
         const twiml = new MessagingResponse();
         var userProvidedCountry = req.body.Body.toLowerCase().trim();
